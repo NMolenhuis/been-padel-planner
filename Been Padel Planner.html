@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Been Padel Planner</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231846FB'/%3E%3Cellipse cx='30' cy='24' rx='16' ry='19' fill='%23FFFFFF' stroke='%23121470' stroke-width='2.5'/%3E%3Ccircle cx='23' cy='16' r='1.6' fill='%23121470'/%3E%3Ccircle cx='30' cy='14' r='1.6' fill='%23121470'/%3E%3Ccircle cx='37' cy='16' r='1.6' fill='%23121470'/%3E%3Ccircle cx='20' cy='23' r='1.6' fill='%23121470'/%3E%3Ccircle cx='30' cy='21' r='1.6' fill='%23121470'/%3E%3Ccircle cx='40' cy='23' r='1.6' fill='%23121470'/%3E%3Ccircle cx='23' cy='30' r='1.6' fill='%23121470'/%3E%3Ccircle cx='30' cy='32' r='1.6' fill='%23121470'/%3E%3Ccircle cx='37' cy='30' r='1.6' fill='%23121470'/%3E%3Crect x='27' y='40' width='6' height='20' rx='3' fill='%23FF966C' stroke='%23121470' stroke-width='2'/%3E%3C/svg%3E">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&display=swap');
+
+  :root{
+    --court:#1846FB;      /* primair blauw */
+    --court-dark:#121470;  /* navy */
+    --court-tint:#DCEEF5;  /* pale blue */
+    --ball:#6DD2EC;        /* cyaan accent */
+    --ball-dark:#086757;   /* teal */
+    --clay:#FF966C;        /* oranje accent */
+    --clay-tint:#FDDDC8;   /* pale peach */
+    --ink:#383838;
+    --ink-soft:#767676;
+    --bg:#F7F9FC;
+    --card:#FFFFFF;
+    --line:#D7E1EC;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Archivo',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    padding-bottom:60px;
+  }
+
+  header.top{
+    background:var(--court);
+    color:#fff;
+    padding:28px 16px 22px;
+    position:relative;
+    overflow:hidden;
+  }
+  .top-inner{max-width:980px;margin:0 auto;}
+  header.top h1{
+    font-family:'Archivo Black',sans-serif;
+    font-size:25px;
+    margin:0 0 4px;
+    letter-spacing:-0.01em;
+  }
+  header.top p{
+    margin:0;
+    font-size:13.5px;
+    color:var(--court-tint);
+  }
+
+  .layout{
+    display:grid;
+    grid-template-columns:1fr 290px;
+    gap:24px;
+    max-width:980px;
+    margin:0 auto;
+    padding:0 16px;
+  }
+  @media (max-width:760px){
+    .layout{grid-template-columns:1fr;}
+    .sidebar{position:static !important;}
+  }
+
+  .sidebar{
+    position:sticky;
+    top:16px;
+    align-self:start;
+    margin-top:20px;
+  }
+  .sidebar h2{
+    font-family:'Archivo Black',sans-serif;
+    font-size:14px;
+    margin:0 0 10px;
+    color:var(--court-dark);
+  }
+  .loc-grid{display:flex;flex-direction:column;gap:8px;}
+  .loc-card{
+    background:var(--card);
+    border:0.5px solid var(--line);
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:12.5px;
+    line-height:1.5;
+  }
+  .loc-card .tag{
+    display:inline-block;
+    font-size:10.5px;
+    font-weight:600;
+    padding:1px 7px;
+    border-radius:20px;
+    margin-bottom:5px;
+  }
+  .tag.binnen{background:var(--court-tint);color:var(--court-dark);}
+  .tag.buiten{background:var(--clay-tint);color:#B5561E;}
+  .loc-card a{color:var(--court);}
+  .loc-card .addr{color:var(--ink-soft);}
+
+  .main{min-width:0;}
+
+  .pinned-label{
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--clay);
+    margin:20px 0 8px;
+  }
+  .section-label{
+    font-family:'Archivo Black',sans-serif;
+    font-size:15px;
+    margin:34px 0 10px;
+    padding-top:14px;
+    border-top:1px solid var(--line);
+    color:var(--court-dark);
+  }
+
+  .month{margin-top:26px;}
+  .month-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    cursor:pointer;
+    padding:6px 0 10px;
+    border-bottom:1px solid var(--line);
+  }
+  .month-head h2{
+    font-family:'Archivo Black',sans-serif;
+    font-size:18px;
+    margin:0;
+    text-transform:capitalize;
+  }
+  .month-head .chev{font-size:13px;color:var(--ink-soft);}
+  .month-body{display:flex;flex-direction:column;gap:12px;margin-top:14px;}
+  .month-body.collapsed{display:none;}
+  .past-body{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+
+  .week{
+    background:var(--card);
+    border:0.5px solid var(--line);
+    border-radius:12px;
+    padding:14px 14px 12px;
+    position:relative;
+  }
+  .week.past{opacity:0.65;}
+  .week.pinned{border:1.5px solid var(--clay);}
+
+  .compact-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    cursor:pointer;
+    padding:2px 0;
+  }
+  .compact-row .week-date-compact{
+    font-size:13px;
+    font-weight:600;
+    flex:none;
+    width:90px;
+  }
+  .compact-row .wd{color:var(--ink-soft);font-weight:400;}
+  .compact-row .compact-status{font-size:12px;color:var(--ink-soft);flex:none;width:100px;}
+  .compact-row .compact-players{font-size:12.5px;color:var(--ink);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .compact-row .chev{color:var(--ink-soft);font-size:12px;}
+
+  .week-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:10px;
+  }
+  .week-date{
+    font-size:15px;
+    font-weight:700;
+  }
+  .week-date .wd{color:var(--ink-soft);font-size:11.5px;display:block;font-weight:400;}
+  .week-controls{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  select,input[type=text]{
+    font-family:'Archivo',sans-serif;
+    font-size:12.5px;
+    padding:5px 7px;
+    border-radius:7px;
+    border:0.5px solid var(--line);
+    background:#fff;
+    color:var(--ink);
+  }
+  select:focus,input:focus{outline:2px solid var(--court);outline-offset:1px;}
+
+  .reserve-link{
+    font-size:12px;
+    font-weight:600;
+    padding:5px 10px;
+    border-radius:7px;
+    border:0.5px solid var(--court);
+    background:var(--court);
+    color:#fff;
+    text-decoration:none;
+    white-space:nowrap;
+  }
+  .reserve-link:hover{background:var(--court-dark);border-color:var(--court-dark);}
+
+  .net{
+    height:1px;
+    background:repeating-linear-gradient(90deg,var(--line) 0 6px, transparent 6px 11px);
+    margin:10px 0;
+  }
+
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media (max-width:520px){.cols{grid-template-columns:1fr;}}
+
+  .col-title{
+    font-size:10.5px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-soft);
+    margin:0 0 8px;
+  }
+
+  .slot-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+  .slot-dot{
+    width:9px;height:9px;border-radius:50%;
+    border:1.5px solid var(--ball-dark);
+    flex:none;
+  }
+  .slot-dot.filled{background:var(--ball-dark);border-color:var(--ball-dark);}
+  .slot-dot.reserve{border-style:dashed;border-color:var(--ink-soft);}
+  .slot-dot.reserve.filled{background:var(--ball-dark);border-color:var(--ball-dark);border-style:solid;}
+  .slot-row select{flex:1;min-width:0;}
+  .slot-row input.other{flex:1;min-width:0;}
+  .slot-label{font-size:11px;color:var(--ink-soft);width:58px;flex:none;}
+
+  .opmerking-row{margin-top:10px;}
+  .opmerking-row input{width:100%;}
+
+  footer.foot{
+    max-width:980px;margin:30px auto 0;padding:0 16px;
+    font-size:11.5px;color:var(--ink-soft);
+    display:flex;justify-content:space-between;
+  }
+  .sync{font-weight:600;}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <h1>Been padel planner</h1>
+    <p>Seizoen 2026 — geef je op voor een plek</p>
+  </div>
+</header>
+
+<div class="layout">
+  <div class="main">
+    <div id="pinned"></div>
+    <div id="months"></div>
+    <div id="pastSection"></div>
+  </div>
+  <aside class="sidebar">
+    <h2>Banen &amp; contact</h2>
+    <div class="loc-grid" id="locGrid"></div>
+  </aside>
+</div>
+
+<footer class="foot">
+  <span>Vervangt de oude Excel-planner</span>
+  <span class="sync" id="syncState">laden…</span>
+</footer>
+
+<script>
+const NAMES = ["Alexandra Vermaak","Annemarie Geerdes","Bart Oberink","Edward Beerthuizen","Ella Molenschot","Emma Wisse","Eva van der Wolf","Frank Beentjes","Hannah Foaden","Iris Bruinink","Jelle Kraayenhof","Jill Ober","Malou Bok","Marine Clément","Melle Puntman","Niek Molenhuis","Robin Greeuw","Robin Zeelenberg","Roel Beentjes","Rogier Visser","Selma van Rhee","Wouter Scholtens"];
+
+const LOCATIONS = [
+  {id:"binnen1",type:"binnen",name:"B.Padel Amsterdam",addr:"Johan Huizingalaan 763a, 1066 VH Amsterdam",phone:"020 26 14 703",mail:"padel@b-buildingbusiness.com",url:"https://b-amsterdam-padel.nl/"},
+  {id:"binnen2",type:"binnen",name:"Padelpoints Badhoevedorp",addr:"Sloterweg 301, 1171VB Badhoevedorp",phone:"06 55801647",mail:"info@padelpoints.nl",url:"https://padelpoints.nl/padel_banen/badhoevedorp/"},
+  {id:"buiten1",type:"buiten",name:"The Padellers Amstelpark",addr:"Koenenkade 8, 1081 KH Amsterdam",phone:"06 15283780",mail:"amstelpark@thepadellers.nl",url:"https://thepadellers.nl/court-booking/amstelpark/"},
+  {id:"buiten2",type:"buiten",name:"Padel Amstelhof Uithoorn",addr:"Noorddammerweg 30, 1424 NX Uithoorn",phone:"0297513698",mail:"info@padelamstelhof.com",url:"https://www.padelamstelhof.com/reserveer/"}
+];
+
+const MONTH_NAMES = ["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"];
+const WEEKDAY_OPTIONS = ["maandag","dinsdag","woensdag","donderdag","vrijdag"];
+const WEEKDAY_SHORT = ["ma","di","wo","do","vr"];
+
+const WEEK_DATES = [
+"2026-01-05","2026-01-12","2026-01-19","2026-01-26",
+"2026-02-02","2026-02-09","2026-02-16","2026-02-23",
+"2026-03-02","2026-03-09","2026-03-16","2026-03-23","2026-03-30",
+"2026-04-06","2026-04-13","2026-04-20","2026-04-27",
+"2026-05-04","2026-05-11","2026-05-18","2026-05-25",
+"2026-06-01","2026-06-08","2026-06-15","2026-06-22",
+"2026-06-29","2026-07-06","2026-07-13","2026-07-20","2026-07-27",
+"2026-08-03","2026-08-10","2026-08-17","2026-08-24",
+"2026-08-31","2026-09-07","2026-09-14","2026-09-21","2026-09-28",
+"2026-10-05","2026-10-12","2026-10-19","2026-10-26",
+"2026-11-02","2026-11-09","2026-11-16","2026-11-23",
+"2026-11-30","2026-12-07","2026-12-14","2026-12-21","2026-12-28"
+];
+
+function emptyWeek(){
+  return {weekdayOffset:0, status:"open", time:"", locationId:"", players:["","","",""], reserves:["",""], opmerking:""};
+}
+
+const SEED = {};
+WEEK_DATES.forEach(d => SEED[d] = emptyWeek());
+
+function setW(d, patch){ Object.assign(SEED[d], patch); }
+
+setW("2026-02-09", {players:["Ella Molenschot","","",""]});
+setW("2026-02-16", {players:["Ella Molenschot","Jolijn Vlieger","",""]});
+setW("2026-02-23", {players:["Jolijn Vlieger","","",""]});
+setW("2026-03-09", {players:["Jolijn Vlieger","","",""]});
+setW("2026-03-16", {status:"reserved", time:"17:30", players:["Ella Molenschot","Jolijn Vlieger","Melle Puntman","Wouter Scholtens"], reserves:["Alexandra Vermaak",""], opmerking:"Padelpoints Badhoevedorp"});
+setW("2026-03-30", {players:["Ella Molenschot","Melle Puntman","Frank Beentjes","Niek Molenhuis"], reserves:["Alexandra Vermaak",""], opmerking:"Padelpoints Badhoevedorp — onder voorbehoud blessurevrij"});
+setW("2026-04-06", {opmerking:"Pasen"});
+setW("2026-04-13", {players:["","Alexandra Vermaak","Niek Molenhuis",""], opmerking:"Sloterweg 301, Badhoevedorp"});
+setW("2026-04-20", {status:"reserved", time:"17:30", players:["Ella Molenschot","Jolijn Vlieger","Wouter Scholtens","Niek Molenhuis"]});
+setW("2026-04-27", {opmerking:"Koningsdag"});
+setW("2026-05-11", {players:["Niek Molenhuis","Melle Puntman","Jolijn Vlieger","Marine Clément"]});
+setW("2026-05-18", {players:["Niek Molenhuis","Emma Wisse","",""]});
+setW("2026-05-25", {opmerking:"Pinksteren"});
+setW("2026-06-01", {players:["Niek Molenhuis","Ella Molenschot","",""]});
+setW("2026-06-08", {players:["Niek Molenhuis","Ella Molenschot","",""]});
+setW("2026-06-15", {status:"reserved", time:"17:30 - 18:30", players:["Niek Molenhuis","Jolijn Vlieger","Robin Zeelenberg","Frank Beentjes"], opmerking:"Sloterweg 301, Badhoevedorp"});
+setW("2026-06-22", {players:["Ella Molenschot","Jolijn Vlieger","",""]});
+setW("2026-06-29", {players:["Niek Molenhuis","","Jolijn Vlieger",""]});
+setW("2026-07-13", {status:"reserved", time:"17:30 - 18:30", players:["Niek Molenhuis","Ella Molenschot","Robin Zeelenberg","Frank Beentjes"], opmerking:"The Padellers Amstelpark"});
+setW("2026-07-20", {players:["Niek Molenhuis","","",""]});
+setW("2026-07-27", {time:"17:30 - 18:30", players:["Niek Molenhuis","Ella Molenschot","Frank Beentjes",""], opmerking:"The Padellers Amstelpark"});
+setW("2026-08-03", {players:["Melle Puntman","","",""]});
+setW("2026-08-24", {players:["Ella Molenschot","","",""]});
+
+let state = null;
+let expanded = new Set();
+const STORAGE_KEY = "padel-2026-v2";
+const today = new Date(); today.setHours(0,0,0,0);
+
+// ====== SUPABASE CONFIG ======
+// Vul hier je eigen Supabase-projectgegevens in (Settings > API in je Supabase-project).
+const SUPABASE_URL = "https://ykvwagoiklronjchkgkm.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrdndhZ29pa2xyb25qY2hrZ2ttIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY3MTA1NDgsImV4cCI6MjEwMjI4NjU0OH0.jWEZK2R8RMXhA8Xn3JvAZM2yJrA2_pELQbdPEwPZYc0";
+// ==============================
+
+let sb = null;
+try{
+  sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}catch(e){
+  console.error("Supabase kon niet worden geïnitialiseerd", e);
+}
+
+function baseDate(iso){ return new Date(iso+"T00:00:00"); }
+function actualDate(iso, offset){
+  const d = baseDate(iso);
+  d.setDate(d.getDate() + (offset||0));
+  return d;
+}
+function isNextMonday(iso){
+  return baseDate(iso) >= today;
+}
+
+async function loadState(){
+  try{
+    const { data, error } = await sb
+      .from("planner_state")
+      .select("data")
+      .eq("id", STORAGE_KEY)
+      .single();
+    if(error || !data) throw error || new Error("geen data");
+    state = data.data;
+  }catch(e){
+    state = JSON.parse(JSON.stringify(SEED));
+    await saveState();
+  }
+  WEEK_DATES.forEach(iso=>{
+    if(!state[iso]) state[iso] = emptyWeek();
+    if(typeof state[iso].weekdayOffset !== "number") state[iso].weekdayOffset = 0;
+    if(!state[iso].players) state[iso].players = ["","","",""];
+    if(!state[iso].reserves) state[iso].reserves = ["",""];
+  });
+}
+let saveTimer=null;
+async function saveState(){
+  document.getElementById("syncState").textContent = "opslaan…";
+  try{
+    const { error } = await sb
+      .from("planner_state")
+      .upsert({ id: STORAGE_KEY, data: state, updated_at: new Date().toISOString() });
+    if(error) throw error;
+    document.getElementById("syncState").textContent = "gedeeld & opgeslagen";
+  }catch(e){
+    console.error(e);
+    document.getElementById("syncState").textContent = "opslaan mislukt — probeer opnieuw";
+  }
+}
+function queueSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveState, 250);
+}
+
+function nameOptions(selected){
+  let html = '<option value="">Vrij</option>';
+  NAMES.forEach(n=>{
+    html += `<option value="${n}" ${selected===n?"selected":""}>${n}</option>`;
+  });
+  html += `<option value="__other__" ${selected && !NAMES.includes(selected) && selected!==""?"selected":""}>Anders…</option>`;
+  return html;
+}
+
+function renderLocations(){
+  const grid = document.getElementById("locGrid");
+  grid.innerHTML = LOCATIONS.map(l=>`
+    <div class="loc-card">
+      <span class="tag ${l.type}">${l.type}</span><br>
+      <strong>${l.name}</strong><br>
+      <span class="addr">${l.addr}</span><br>
+      <a href="${l.url}" target="_blank" rel="noopener">website</a> · ${l.phone}
+    </div>
+  `).join("");
+}
+
+function renderAll(){
+  const pinnedIso = WEEK_DATES.find(isNextMonday);
+
+  const pinnedWrap = document.getElementById("pinned");
+  pinnedWrap.innerHTML = "";
+  if(pinnedIso){
+    const label = document.createElement("div");
+    label.className = "pinned-label";
+    label.textContent = "Komende week";
+    pinnedWrap.appendChild(label);
+    pinnedWrap.appendChild(renderWeek(pinnedIso, {pinned:true, forceExpand:true}));
+  }
+
+  const upcomingIsos = WEEK_DATES.filter(iso => iso!==pinnedIso && actualDate(iso, state[iso].weekdayOffset) >= today);
+  const pastIsos = WEEK_DATES.filter(iso => iso!==pinnedIso && actualDate(iso, state[iso].weekdayOffset) < today);
+
+  const container = document.getElementById("months");
+  container.innerHTML = "";
+  const groups = {};
+  upcomingIsos.forEach(d=>{
+    const m = baseDate(d).getMonth();
+    if(!groups[m]) groups[m]=[];
+    groups[m].push(d);
+  });
+  const currentMonth = today.getFullYear()===2026 ? today.getMonth() : 0;
+
+  Object.keys(groups).map(Number).sort((a,b)=>a-b).forEach(m=>{
+    const monthEl = document.createElement("div");
+    monthEl.className = "month";
+    const isOpenDefault = (m===currentMonth || m===currentMonth+1);
+    monthEl.innerHTML = `
+      <div class="month-head" data-m="${m}">
+        <h2>${MONTH_NAMES[m]} 2026</h2>
+        <span class="chev">${isOpenDefault?"▾":"▸"}</span>
+      </div>
+      <div class="month-body ${isOpenDefault?"":"collapsed"}" id="mbody-${m}"></div>
+    `;
+    container.appendChild(monthEl);
+    const body = monthEl.querySelector(`#mbody-${m}`);
+    groups[m].forEach(d=> body.appendChild(renderWeek(d, {pinned:false})));
+
+    monthEl.querySelector(".month-head").addEventListener("click", ()=>{
+      const b = document.getElementById(`mbody-${m}`);
+      const chev = monthEl.querySelector(".chev");
+      const collapsed = b.classList.toggle("collapsed");
+      chev.textContent = collapsed ? "▸" : "▾";
+    });
+  });
+
+  const pastWrap = document.getElementById("pastSection");
+  pastWrap.innerHTML = "";
+  if(pastIsos.length){
+    const label = document.createElement("div");
+    label.className = "section-label";
+    label.textContent = "Voorbije weken";
+    pastWrap.appendChild(label);
+    const body = document.createElement("div");
+    body.className = "past-body";
+    pastIsos.forEach(d=> body.appendChild(renderWeek(d, {pinned:false})));
+    pastWrap.appendChild(body);
+  }
+}
+
+function renderWeek(iso, opts){
+  opts = opts || {};
+  const w = state[iso];
+  const dObj = actualDate(iso, w.weekdayOffset);
+  const isPast = dObj < today;
+  const showCompact = isPast && !opts.forceExpand && !expanded.has(iso);
+
+  const el = document.createElement("div");
+  el.className = "week" + (isPast?" past":"") + (opts.pinned?" pinned":"");
+
+  if(showCompact){
+    const namesUsed = [...w.players, ...w.reserves].filter(Boolean).join(", ") || "geen deelnemers";
+    const statusLabel = w.status==="reserved" ? ("Gereserveerd" + (w.time?" "+w.time:"")) : "Niet gereserveerd";
+    el.innerHTML = `
+      <div class="compact-row">
+        <span class="week-date-compact">${dObj.getDate()} ${MONTH_NAMES[dObj.getMonth()].slice(0,3)}<span class="wd"> ${WEEKDAY_SHORT[w.weekdayOffset]}</span></span>
+        <span class="compact-status">${statusLabel}</span>
+        <span class="compact-players">${namesUsed}</span>
+        <span class="chev">▸</span>
+      </div>
+    `;
+    el.querySelector(".compact-row").addEventListener("click", ()=>{
+      expanded.add(iso);
+      renderAll();
+    });
+    return el;
+  }
+
+  const locOptions = `<option value="">Locatie…</option>` + LOCATIONS.map(l=>`<option value="${l.id}" ${w.locationId===l.id?"selected":""}>${l.name}</option>`).join("");
+  const weekdaySelect = `<select class="weekdaySel">${WEEKDAY_OPTIONS.map((label,i)=>`<option value="${i}" ${w.weekdayOffset===i?"selected":""}>${label}</option>`).join("")}</select>`;
+  const activeLoc = LOCATIONS.find(l=>l.id===w.locationId);
+  const reserveBtn = activeLoc ? `<a class="reserve-link" href="${activeLoc.url}" target="_blank" rel="noopener">Reserveer ↗</a>` : "";
+
+  el.innerHTML = `
+    <div class="week-head">
+      <div class="week-date">${dObj.getDate()} ${MONTH_NAMES[dObj.getMonth()].slice(0,3)}<span class="wd">${WEEKDAY_SHORT[w.weekdayOffset]}</span></div>
+      <div class="week-controls">
+        ${weekdaySelect}
+        <select class="statusSel">
+          <option value="open" ${w.status==="open"?"selected":""}>Nog niet gereserveerd</option>
+          <option value="reserved" ${w.status==="reserved"?"selected":""}>Gereserveerd</option>
+        </select>
+        <input type="text" class="timeInput" placeholder="tijd" value="${w.time}" style="width:90px;display:${w.status==="reserved"?"inline-block":"none"}">
+        <select class="locSel">${locOptions}</select>
+        <span class="reserveWrap">${reserveBtn}</span>
+      </div>
+    </div>
+    <div class="cols">
+      <div>
+        <p class="col-title">Speelt mee</p>
+        <div class="players"></div>
+      </div>
+      <div>
+        <p class="col-title">Reserve</p>
+        <div class="reserves"></div>
+      </div>
+    </div>
+    <div class="net"></div>
+    <div class="opmerking-row">
+      <input type="text" class="opmInput" placeholder="Opmerking (locatie, bijzonderheden)" value="${w.opmerking.replace(/"/g,'&quot;')}">
+    </div>
+  `;
+
+  const playersWrap = el.querySelector(".players");
+  w.players.forEach((p,i)=>{
+    const row = document.createElement("div");
+    row.className = "slot-row";
+    row.innerHTML = `<span class="slot-dot ${p?"filled":""}"></span><span class="slot-label">speler ${i+1}</span><select data-idx="${i}" data-kind="players">${nameOptions(p)}</select>`;
+    playersWrap.appendChild(row);
+    const sel = row.querySelector("select");
+    sel.addEventListener("change", ()=> handleSlotChange(iso, "players", i, sel, row));
+    if(p && !NAMES.includes(p)){
+      addOtherInput(row, sel, p, iso, "players", i);
+    }
+  });
+
+  const reservesWrap = el.querySelector(".reserves");
+  w.reserves.forEach((p,i)=>{
+    const row = document.createElement("div");
+    row.className = "slot-row";
+    row.innerHTML = `<span class="slot-dot reserve ${p?"filled":""}"></span><span class="slot-label">reserve ${i+1}</span><select data-idx="${i}" data-kind="reserves">${nameOptions(p)}</select>`;
+    reservesWrap.appendChild(row);
+    const sel = row.querySelector("select");
+    sel.addEventListener("change", ()=> handleSlotChange(iso, "reserves", i, sel, row));
+    if(p && !NAMES.includes(p)){
+      addOtherInput(row, sel, p, iso, "reserves", i);
+    }
+  });
+
+  el.querySelector(".weekdaySel").addEventListener("change", (e)=>{
+    const newVal = parseInt(e.target.value, 10);
+    const hasNames = w.players.some(Boolean) || w.reserves.some(Boolean);
+    if(hasNames){
+      const ok = confirm("Let op! Met deze actie verwijder je de ingevulde namen.");
+      if(!ok){
+        e.target.value = state[iso].weekdayOffset;
+        return;
+      }
+    }
+    state[iso].weekdayOffset = newVal;
+    state[iso].players = ["","","",""];
+    state[iso].reserves = ["",""];
+    queueSave();
+    renderAll();
+  });
+  el.querySelector(".statusSel").addEventListener("change", (e)=>{
+    state[iso].status = e.target.value;
+    const timeInput = el.querySelector(".timeInput");
+    timeInput.style.display = e.target.value==="reserved" ? "inline-block" : "none";
+    queueSave();
+  });
+  el.querySelector(".timeInput").addEventListener("input", (e)=>{
+    state[iso].time = e.target.value;
+    queueSave();
+  });
+  el.querySelector(".locSel").addEventListener("change", (e)=>{
+    state[iso].locationId = e.target.value;
+    queueSave();
+    renderAll();
+  });
+  el.querySelector(".opmInput").addEventListener("input", (e)=>{
+    state[iso].opmerking = e.target.value;
+    queueSave();
+  });
+
+  return el;
+}
+
+function addOtherInput(row, sel, currentVal, iso, kind, idx){
+  const input = document.createElement("input");
+  input.type = "text";
+  input.className = "other";
+  input.value = currentVal;
+  input.placeholder = "Naam";
+  row.appendChild(input);
+  input.addEventListener("input", ()=>{
+    state[iso][kind][idx] = input.value;
+    queueSave();
+  });
+}
+
+function isDuplicateInWeek(iso, kind, idx, name){
+  if(!name) return false;
+  const w = state[iso];
+  for(let i=0;i<w.players.length;i++){
+    if(!(kind==="players" && i===idx) && w.players[i]===name) return true;
+  }
+  for(let i=0;i<w.reserves.length;i++){
+    if(!(kind==="reserves" && i===idx) && w.reserves[i]===name) return true;
+  }
+  return false;
+}
+
+function handleSlotChange(iso, kind, idx, sel, row){
+  const existingOther = row.querySelector("input.other");
+  if(sel.value==="__other__"){
+    if(existingOther) existingOther.remove();
+    state[iso][kind][idx] = "";
+    addOtherInput(row, sel, "", iso, kind, idx);
+    row.querySelector(".slot-dot").classList.remove("filled");
+    queueSave();
+    return;
+  }
+  if(sel.value && isDuplicateInWeek(iso, kind, idx, sel.value)){
+    alert(sel.value + " staat deze week al bij een andere plek ingevuld.");
+    sel.value = state[iso][kind][idx];
+    return;
+  }
+  if(existingOther) existingOther.remove();
+  state[iso][kind][idx] = sel.value;
+  row.querySelector(".slot-dot").classList.toggle("filled", !!sel.value);
+  queueSave();
+}
+
+(async function init(){
+  renderLocations();
+  await loadState();
+  renderAll();
+})();
+</script>
+</body>
+</html>
