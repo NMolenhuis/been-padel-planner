@@ -77,6 +77,57 @@
     color:var(--court-dark);
   }
   .loc-grid{display:flex;flex-direction:column;gap:8px;}
+
+  .quickbook-section{
+    margin-bottom:22px;
+    background:linear-gradient(155deg, var(--clay-tint) 0%, #FFFFFF 65%);
+    border:1.5px solid var(--clay);
+    border-radius:14px;
+    padding:14px 14px 12px;
+    box-shadow:0 4px 14px rgba(255,150,108,0.25);
+  }
+  .quickbook-section h2{
+    font-family:'Archivo Black',sans-serif;
+    font-size:15px;
+    margin:0 0 4px;
+    color:var(--clay);
+  }
+  .quickbook-sub{
+    font-size:11.5px;
+    color:var(--ink-soft);
+    margin:0 0 12px;
+    line-height:1.4;
+  }
+  .quickbook-empty{
+    font-size:12px;
+    color:var(--ink-soft);
+    background:var(--card);
+    border:0.5px dashed var(--line);
+    border-radius:10px;
+    padding:10px 12px;
+  }
+  .quickbook-card{
+    background:var(--card);
+    border:1px solid var(--ink);
+    border-radius:10px;
+    padding:10px 12px;
+    margin-bottom:8px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    box-shadow:0 1px 4px rgba(56,56,56,0.12);
+  }
+  .quickbook-card .qb-info{display:flex;flex-direction:column;gap:2px;}
+  .quickbook-card .qb-date{font-size:13px;font-weight:700;}
+  .quickbook-card .qb-date .wd{color:var(--ink-soft);font-weight:400;font-size:11px;}
+  .quickbook-card .qb-count{font-size:11px;color:var(--ball-dark);font-weight:600;}
+  .reserve-link.secondary{
+    background:transparent;
+    color:var(--court);
+    border:0.5px solid var(--court);
+  }
+  .reserve-link.secondary:hover{background:var(--court-tint);}
   .loc-card{
     background:var(--card);
     border:0.5px solid var(--line);
@@ -266,6 +317,7 @@
     <div id="pastSection"></div>
   </div>
   <aside class="sidebar">
+    <div id="quickBookSection"></div>
     <h2>Banen &amp; contact</h2>
     <div class="loc-grid" id="locGrid"></div>
   </aside>
@@ -363,7 +415,7 @@ function actualDate(iso, offset){
   return d;
 }
 function isNextMonday(iso){
-  return baseDate(iso) >= today;
+  return baseDate(iso) > today;
 }
 
 async function loadState(){
@@ -487,6 +539,45 @@ function renderAll(){
     pastIsos.forEach(d=> body.appendChild(renderWeek(d, {pinned:false})));
     pastWrap.appendChild(body);
   }
+
+  renderQuickBook();
+}
+
+function renderQuickBook(){
+  const wrap = document.getElementById("quickBookSection");
+  const candidates = WEEK_DATES.filter(iso=>{
+    const w = state[iso];
+    const filled = w.players.filter(Boolean).length;
+    const notPast = actualDate(iso, w.weekdayOffset) >= today;
+    return filled === 3 && notPast;
+  }).sort((a,b)=> actualDate(a, state[a].weekdayOffset) - actualDate(b, state[b].weekdayOffset));
+
+  if(candidates.length === 0){
+    wrap.innerHTML = "";
+    return;
+  }
+  let html = `<div class="quickbook-section"><h2>Snel boeken</h2><p class="quickbook-sub">Maak het kwartet compleet en reserveer meteen een baan!</p>`;
+  {
+    candidates.forEach(iso=>{
+      const w = state[iso];
+      const dObj = actualDate(iso, w.weekdayOffset);
+      const activeLoc = LOCATIONS.find(l=>l.id===w.locationId);
+      const action = activeLoc
+        ? `<a class="reserve-link" href="${activeLoc.url}" target="_blank" rel="noopener">Boek ↗</a>`
+        : `<a class="reserve-link secondary" href="#week-${iso}">Kies plek</a>`;
+      html += `
+        <div class="quickbook-card">
+          <div class="qb-info">
+            <span class="qb-date">${dObj.getDate()} ${MONTH_NAMES[dObj.getMonth()].slice(0,3)}<span class="wd"> ${WEEKDAY_SHORT[w.weekdayOffset]}</span></span>
+            <span class="qb-count">3/4 spelers</span>
+          </div>
+          ${action}
+        </div>
+      `;
+    });
+  }
+  html += `</div>`;
+  wrap.innerHTML = html;
 }
 
 function renderWeek(iso, opts){
@@ -498,6 +589,7 @@ function renderWeek(iso, opts){
 
   const el = document.createElement("div");
   el.className = "week" + (isPast?" past":"") + (opts.pinned?" pinned":"");
+  el.id = "week-" + iso;
 
   if(showCompact){
     const namesUsed = [...w.players, ...w.reserves].filter(Boolean).join(", ") || "geen deelnemers";
