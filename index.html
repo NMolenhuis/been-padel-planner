@@ -54,23 +54,29 @@
   .layout{
     display:grid;
     grid-template-columns:1fr 290px;
+    grid-template-areas:
+      "main quickbook"
+      "main locations";
     gap:24px;
     max-width:980px;
     margin:0 auto;
     padding:0 16px;
+    align-items:start;
   }
   @media (max-width:760px){
-    .layout{grid-template-columns:1fr;}
-    .sidebar{position:static !important;}
+    .layout{
+      grid-template-columns:1fr;
+      grid-template-areas:
+        "quickbook"
+        "main"
+        "locations";
+    }
+    .quickbook-wrap, .locations-wrap{position:static !important;}
   }
 
-  .sidebar{
-    position:sticky;
-    top:16px;
-    align-self:start;
-    margin-top:20px;
-  }
-  .sidebar h2{
+  .quickbook-wrap{grid-area:quickbook; position:sticky; top:16px; margin-top:20px;}
+  .locations-wrap{grid-area:locations; position:sticky; top:16px;}
+  .locations-wrap h2{
     font-family:'Archivo Black',sans-serif;
     font-size:14px;
     margin:0 0 10px;
@@ -311,13 +317,15 @@
 </header>
 
 <div class="layout">
+  <div class="quickbook-wrap">
+    <div id="quickBookSection"></div>
+  </div>
   <div class="main">
     <div id="pinned"></div>
     <div id="months"></div>
     <div id="pastSection"></div>
   </div>
-  <aside class="sidebar">
-    <div id="quickBookSection"></div>
+  <aside class="locations-wrap">
     <h2>Banen &amp; contact</h2>
     <div class="loc-grid" id="locGrid"></div>
   </aside>
@@ -491,8 +499,8 @@ function renderAll(){
     pinnedWrap.appendChild(renderWeek(pinnedIso, {pinned:true, forceExpand:true}));
   }
 
-  const upcomingIsos = WEEK_DATES.filter(iso => iso!==pinnedIso && actualDate(iso, state[iso].weekdayOffset) >= today);
-  const pastIsos = WEEK_DATES.filter(iso => iso!==pinnedIso && actualDate(iso, state[iso].weekdayOffset) < today);
+  const upcomingIsos = WEEK_DATES.filter(iso => iso!==pinnedIso && baseDate(iso) > today);
+  const pastIsos = WEEK_DATES.filter(iso => iso!==pinnedIso && baseDate(iso) <= today);
 
   const container = document.getElementById("months");
   container.innerHTML = "";
@@ -548,7 +556,7 @@ function renderQuickBook(){
   const candidates = WEEK_DATES.filter(iso=>{
     const w = state[iso];
     const filled = w.players.filter(Boolean).length;
-    const notPast = actualDate(iso, w.weekdayOffset) >= today;
+    const notPast = baseDate(iso) > today;
     return filled === 3 && notPast;
   }).sort((a,b)=> actualDate(a, state[a].weekdayOffset) - actualDate(b, state[b].weekdayOffset));
 
@@ -584,7 +592,7 @@ function renderWeek(iso, opts){
   opts = opts || {};
   const w = state[iso];
   const dObj = actualDate(iso, w.weekdayOffset);
-  const isPast = dObj < today;
+  const isPast = baseDate(iso) <= today;
   const showCompact = isPast && !opts.forceExpand && !expanded.has(iso);
 
   const el = document.createElement("div");
