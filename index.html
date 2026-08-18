@@ -52,32 +52,22 @@
   }
 
   .layout{
-    display:grid;
-    grid-template-columns:1fr 290px;
-    grid-template-rows:min-content 1fr;
-    grid-template-areas:
-      "main quickbook"
-      "main locations";
+    display:flex;
     gap:24px;
     max-width:980px;
     margin:0 auto;
     padding:0 16px;
-    align-items:start;
   }
+  .main{flex:1; min-width:0;}
+  .rightcol{width:290px; flex:none; display:flex; flex-direction:column;}
   @media (max-width:760px){
-    .layout{
-      grid-template-columns:1fr;
-      grid-template-rows:auto;
-      grid-template-areas:
-        "quickbook"
-        "main"
-        "locations";
-    }
+    .layout{flex-direction:column;}
+    .rightcol{width:100%;}
     .quickbook-wrap, .locations-wrap{position:static !important;}
   }
 
-  .quickbook-wrap{grid-area:quickbook; position:sticky; top:16px; margin-top:20px;}
-  .locations-wrap{grid-area:locations; position:sticky; top:16px;}
+  .quickbook-wrap{position:sticky; top:16px; margin-top:20px;}
+  .locations-wrap{position:sticky; top:16px;}
   .locations-wrap h2{
     font-family:'Archivo Black',sans-serif;
     font-size:14px;
@@ -319,18 +309,20 @@
 </header>
 
 <div class="layout">
-  <div class="quickbook-wrap">
-    <div id="quickBookSection"></div>
-  </div>
   <div class="main">
     <div id="pinned"></div>
     <div id="months"></div>
     <div id="pastSection"></div>
   </div>
-  <aside class="locations-wrap">
-    <h2>Banen &amp; contact</h2>
-    <div class="loc-grid" id="locGrid"></div>
-  </aside>
+  <div class="rightcol" id="rightcol">
+    <div class="quickbook-wrap" id="quickbookWrap">
+      <div id="quickBookSection"></div>
+    </div>
+    <aside class="locations-wrap">
+      <h2>Banen &amp; contact</h2>
+      <div class="loc-grid" id="locGrid"></div>
+    </aside>
+  </div>
 </div>
 
 <footer class="foot">
@@ -764,6 +756,21 @@ function handleSlotChange(iso, kind, idx, sel, row){
   row.querySelector(".slot-dot").classList.toggle("filled", !!sel.value);
   queueSave();
 }
+
+const mobileQuery = window.matchMedia("(max-width:760px)");
+function placeQuickbook(e){
+  const wrap = document.getElementById("quickbookWrap");
+  const layout = document.querySelector(".layout");
+  const mainEl = document.querySelector(".main");
+  const rightcol = document.getElementById("rightcol");
+  if(e.matches){
+    layout.insertBefore(wrap, mainEl);
+  }else{
+    rightcol.insertBefore(wrap, rightcol.firstChild);
+  }
+}
+placeQuickbook(mobileQuery);
+mobileQuery.addEventListener("change", placeQuickbook);
 
 (async function init(){
   renderLocations();
