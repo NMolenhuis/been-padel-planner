@@ -54,6 +54,7 @@
   .layout{
     display:grid;
     grid-template-columns:1fr 290px;
+    grid-template-rows:min-content 1fr;
     grid-template-areas:
       "main quickbook"
       "main locations";
@@ -66,6 +67,7 @@
   @media (max-width:760px){
     .layout{
       grid-template-columns:1fr;
+      grid-template-rows:auto;
       grid-template-areas:
         "quickbook"
         "main"
