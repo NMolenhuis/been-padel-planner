@@ -126,6 +126,17 @@
     border:0.5px solid var(--court);
   }
   .reserve-link.secondary:hover{background:var(--court-tint);}
+
+  .collapse-btn{
+    font-size:11.5px;
+    color:var(--ink-soft);
+    background:none;
+    border:0.5px solid var(--line);
+    border-radius:7px;
+    padding:5px 9px;
+    cursor:pointer;
+  }
+  .collapse-btn:hover{background:var(--bg);}
   .loc-card{
     background:var(--card);
     border:0.5px solid var(--line);
@@ -543,6 +554,7 @@ function renderAll(){
   }
 
   renderQuickBook();
+  if(typeof syncStickyLayout === "function") syncStickyLayout();
 }
 
 function renderQuickBook(){
@@ -615,6 +627,7 @@ function renderWeek(iso, opts){
   const weekdaySelect = `<select class="weekdaySel">${WEEKDAY_OPTIONS.map((label,i)=>`<option value="${i}" ${w.weekdayOffset===i?"selected":""}>${label}</option>`).join("")}</select>`;
   const activeLoc = LOCATIONS.find(l=>l.id===w.locationId);
   const reserveBtn = activeLoc ? `<a class="reserve-link" href="${activeLoc.url}" target="_blank" rel="noopener">Reserveer ↗</a>` : "";
+  const collapseBtn = isPast ? `<button type="button" class="collapse-btn">Inklappen ▴</button>` : "";
 
   el.innerHTML = `
     <div class="week-head">
@@ -628,6 +641,7 @@ function renderWeek(iso, opts){
         <input type="text" class="timeInput" placeholder="tijd" value="${w.time}" style="width:90px;display:${w.status==="reserved"?"inline-block":"none"}">
         <select class="locSel">${locOptions}</select>
         <span class="reserveWrap">${reserveBtn}</span>
+        ${collapseBtn}
       </div>
     </div>
     <div class="cols">
@@ -671,6 +685,16 @@ function renderWeek(iso, opts){
       addOtherInput(row, sel, p, iso, "reserves", i);
     }
   });
+
+  if(isPast){
+    const collapseBtnEl = el.querySelector(".collapse-btn");
+    if(collapseBtnEl){
+      collapseBtnEl.addEventListener("click", ()=>{
+        expanded.delete(iso);
+        renderAll();
+      });
+    }
+  }
 
   el.querySelector(".weekdaySel").addEventListener("change", (e)=>{
     const newVal = parseInt(e.target.value, 10);
@@ -769,8 +793,40 @@ function placeQuickbook(e){
     rightcol.insertBefore(wrap, rightcol.firstChild);
   }
 }
+
+function syncStickyLayout(){
+  const layout = document.querySelector(".layout");
+  const qbWrap = document.getElementById("quickbookWrap");
+  const locWrap = document.querySelector(".locations-wrap");
+  if(!layout || !qbWrap || !locWrap) return;
+
+  if(mobileQuery.matches){
+    qbWrap.style.marginTop = "";
+    locWrap.style.top = "";
+    return;
+  }
+
+  // Lijn de top van "Snel boeken" uit met de top van de "Komende week"-kaart
+  const pinnedCard = document.querySelector("#pinned .week");
+  if(pinnedCard){
+    const layoutTop = layout.getBoundingClientRect().top;
+    const cardTop = pinnedCard.getBoundingClientRect().top;
+    qbWrap.style.marginTop = Math.max(0, cardTop - layoutTop) + "px";
+  }
+
+  // Laat "Banen & contact" pas beginnen te plakken vlak onder "Snel boeken",
+  // in plaats van eroverheen te schuiven
+  const gap = locWrap.offsetTop - qbWrap.offsetTop;
+  locWrap.style.top = (16 + gap) + "px";
+}
+
 placeQuickbook(mobileQuery);
-mobileQuery.addEventListener("change", placeQuickbook);
+syncStickyLayout();
+mobileQuery.addEventListener("change", (e)=>{
+  placeQuickbook(e);
+  syncStickyLayout();
+});
+window.addEventListener("resize", syncStickyLayout);
 
 (async function init(){
   renderLocations();
