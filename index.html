@@ -308,10 +308,51 @@
     display:flex;justify-content:space-between;
   }
   .sync{font-weight:600;}
+
+  .lock-overlay{
+    position:fixed; inset:0;
+    background:var(--court);
+    display:flex; align-items:center; justify-content:center;
+    z-index:1000; padding:16px;
+  }
+  .lock-overlay.hidden{display:none;}
+  .lock-card{
+    background:var(--card);
+    border-radius:14px;
+    padding:26px 24px 22px;
+    width:100%; max-width:340px;
+    box-shadow:0 10px 30px rgba(18,20,112,0.3);
+  }
+  .lock-card h2{
+    font-family:'Archivo Black',sans-serif;
+    font-size:20px; margin:0 0 4px; color:var(--court-dark);
+  }
+  .lock-card p{font-size:13px; color:var(--ink-soft); margin:0 0 16px;}
+  .lock-card input{
+    width:100%; font-size:14px; padding:9px 10px; margin-bottom:10px;
+    font-family:'Archivo',sans-serif;
+    border:1px solid var(--line); border-radius:8px;
+  }
+  .lock-card button{
+    width:100%; font-size:14px; font-weight:600; padding:9px;
+    border:none; border-radius:8px; cursor:pointer;
+    background:var(--clay); color:#fff; font-family:'Archivo',sans-serif;
+  }
+  .lock-card button:hover{filter:brightness(0.95);}
+  .lock-error{color:#B3432E; font-size:12.5px; margin-top:8px; min-height:16px;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
+<div class="lock-overlay" id="lockOverlay">
+  <form class="lock-card" id="lockForm" autocomplete="off">
+    <h2>Been padel planner</h2>
+    <p>Voer het wachtwoord in om de planner te openen.</p>
+    <input type="password" id="lockInput" name="password" placeholder="Wachtwoord" autofocus>
+    <button type="submit">Openen</button>
+    <div class="lock-error" id="lockError"></div>
+  </form>
+</div>
 <header class="top">
   <div class="top-inner">
     <h1>Been padel planner</h1>
@@ -828,10 +869,49 @@ mobileQuery.addEventListener("change", (e)=>{
 });
 window.addEventListener("resize", syncStickyLayout);
 
-(async function init(){
+// ====== WACHTWOORD ======
+// Alleen de SHA-256-hash van het wachtwoord staat in de code, niet het wachtwoord zelf.
+const PASSWORD_HASH = "c67ce10645fd29bf256ad17ec29937e625d0709bc095d3816f3fc817c9fc9cec";
+const AUTH_KEY = "been-padel-auth";
+
+async function sha256(text){
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+
+async function startApp(){
+  document.getElementById("lockOverlay").classList.add("hidden");
   renderLocations();
   await loadState();
   renderAll();
+}
+
+(async function init(){
+  let remembered = null;
+  try{ remembered = localStorage.getItem(AUTH_KEY); }catch(e){}
+  if(remembered === PASSWORD_HASH){
+    startApp();
+    return;
+  }
+
+  const form = document.getElementById("lockForm");
+  const input = document.getElementById("lockInput");
+  const errorEl = document.getElementById("lockError");
+  input.focus();
+
+  form.addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    const hash = await sha256(input.value.trim());
+    if(hash === PASSWORD_HASH){
+      try{ localStorage.setItem(AUTH_KEY, hash); }catch(err){}
+      errorEl.textContent = "";
+      startApp();
+    }else{
+      errorEl.textContent = "Onjuist wachtwoord, probeer het opnieuw.";
+      input.value = "";
+      input.focus();
+    }
+  });
 })();
 </script>
 </body>
